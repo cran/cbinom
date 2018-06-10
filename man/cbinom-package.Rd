@@ -8,7 +8,7 @@ Continuous Analog of a Binomial Distribution
 \description{
 Implementation of the d/p/q/r family of functions for a continuous analog to the
 standard discrete binomial with continuous size parameter and continuous support
-with x in [0, size + 1].
+with \code{x} in \code{[0, size + 1]}.
 }
 \details{
 Included in the package are functions \code{dcbinom(x, size, prob, log = FALSE)},

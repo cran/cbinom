@@ -5,19 +5,31 @@
 
 using namespace Rcpp;
 
+// pcbinomC
+NumericVector pcbinomC(NumericVector q, NumericVector sz, NumericVector prob, bool logp);
+RcppExport SEXP _cbinom_pcbinomC(SEXP qSEXP, SEXP szSEXP, SEXP probSEXP, SEXP logpSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type q(qSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sz(szSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type prob(probSEXP);
+    Rcpp::traits::input_parameter< bool >::type logp(logpSEXP);
+    rcpp_result_gen = Rcpp::wrap(pcbinomC(q, sz, prob, logp));
+    return rcpp_result_gen;
+END_RCPP
+}
 // qcbinomC
-NumericVector qcbinomC(NumericVector p, NumericVector m, NumericVector g, bool lowertail, bool logp, bool rcb);
-RcppExport SEXP _cbinom_qcbinomC(SEXP pSEXP, SEXP mSEXP, SEXP gSEXP, SEXP lowertailSEXP, SEXP logpSEXP, SEXP rcbSEXP) {
+NumericVector qcbinomC(NumericVector p, NumericVector m, NumericVector g, bool rcb);
+RcppExport SEXP _cbinom_qcbinomC(SEXP pSEXP, SEXP mSEXP, SEXP gSEXP, SEXP rcbSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type p(pSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type m(mSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type g(gSEXP);
-    Rcpp::traits::input_parameter< bool >::type lowertail(lowertailSEXP);
-    Rcpp::traits::input_parameter< bool >::type logp(logpSEXP);
     Rcpp::traits::input_parameter< bool >::type rcb(rcbSEXP);
-    rcpp_result_gen = Rcpp::wrap(qcbinomC(p, m, g, lowertail, logp, rcb));
+    rcpp_result_gen = Rcpp::wrap(qcbinomC(p, m, g, rcb));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -36,7 +48,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_cbinom_qcbinomC", (DL_FUNC) &_cbinom_qcbinomC, 6},
+    {"_cbinom_pcbinomC", (DL_FUNC) &_cbinom_pcbinomC, 4},
+    {"_cbinom_qcbinomC", (DL_FUNC) &_cbinom_qcbinomC, 4},
     {"_cbinom_dcblp", (DL_FUNC) &_cbinom_dcblp, 3},
     {NULL, NULL, 0}
 };

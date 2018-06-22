@@ -84,6 +84,9 @@ NumericVector qcbinomC(NumericVector p, NumericVector m, NumericVector g,
     } else if (gna[i%g.size()]){
       x[i] = NA_REAL;
       continue;
+    } else if (g[i%g.size()] >= 1 - 2*eps) {
+      x[i] = m[i%m.size()] + 1.0;
+      continue;
     } else {
       prob = g[i%g.size()];
     }

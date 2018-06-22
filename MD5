@@ -1,8 +1,8 @@
-246e6017b3c60f6f4dba4123d69d0b0a *DESCRIPTION
+a73c467473ea70b3c272276be2fb02d9 *DESCRIPTION
 10e486e2199ef498b2549e39f86b6fb2 *NAMESPACE
 77d4e1a93fb2ac208280d3e99bbd0e96 *R/RcppExports.R
 3df9c4c43d9dc28b745e5572491e1132 *R/cbinom.R
 05a9436d332cc8b6e6a6283bc213f08b *man/cbinom-package.Rd
 c97aa7da2b69a5df2b11cbe9f802b4d4 *man/cbinom.rd
 9cb7c8cbf4f016a475f7ea1ca9aef99b *src/RcppExports.cpp
-76f50987c6817405b06366155800a8aa *src/cbinom.cpp
+a86d7d92aa891ab93633948038f998cf *src/cbinom.cpp

@@ -35,16 +35,24 @@ NumericVector pcbinomC(NumericVector q, NumericVector sz, NumericVector prob,
       p[i] = R_NaN;
       continue;
     }
-    if (sz[i%sz.size()] < 0){
+    if (sz[i%sz.size()] < 0 || sz[i%sz.size()] == R_PosInf){
       p[i] = R_NaN;
       continue;
     }
     if (q[i%q.size()] > sz[i%sz.size()] + 1){
-      p[i] = 1;
+      if (logp){
+        p[i] = 0;
+      } else {
+        p[i] = 1;
+      }
       continue;
     }
     if (q[i%q.size()] < 0){
-      p[i] = 0;
+      if (logp){
+        p[i] = R_NegInf;
+      } else {
+        p[i] = 0;
+      }
       continue;
     }
     p[i] = R::pbeta(prob[i%prob.size()], q[i%q.size()],
@@ -58,7 +66,7 @@ NumericVector qcbinomC(NumericVector p, NumericVector m, NumericVector g,
   bool rcb = false){
   // assumes probabilities (p) are on logscale and calculates lower tail
   // this level of preprocessing should be done in R
-  int n = int(p.size());
+  int n = int(p.size()), ctr = 0;
   if (!rcb){//if random, length = length(p); otherwise, length = maxlen(p, m, g)
     n = std::max(n, int(m.size()));
     n = std::max(n, int(g.size()));
@@ -70,62 +78,51 @@ NumericVector qcbinomC(NumericVector p, NumericVector m, NumericVector g,
   double x0, x1, x2, f0, f1, f2, sz, prob;
   double maxx;
   double rtt = sqrt(eps);
-  double hwid;
-  double tmp[4], dx, d0;
+  double hwid, dx, d0;
+  double tmp[4];
   LogicalVector gnan = is_nan(g), gna = is_na(g);
   LogicalVector mnan = is_nan(m), mna = is_na(m);
   LogicalVector pnan = is_nan(p), pna = is_na(p);
     //calculate x[i]
   for (int i = 0; i < n; i++){ 
     // pre-process and error-check
-    if (gnan[i%g.size()]){
+
+    // NAs and NaNs:
+    if (gna[i%g.size()] || mna[i%m.size()] || pna[i%p.size()]){
+      if ((pna[i%p.size()] && !pnan[i%p.size()]) ||
+          (mna[i%m.size()] && !mnan[i%m.size()]) ||
+          (gna[i%g.size()] && !gnan[i%g.size()])){
+        x[i] = NA_REAL;
+        continue;
+      }
+      else {
+        x[i] = R_NaN;
+        continue;
+      }
+    }
+    // bad numeric parameters
+    if (g[i%g.size()] > 1 || g[i%g.size()] < 0 ||
+        m[i%m.size()] < 0 || p[i%p.size()] > 0 || m[i%m.size()] == R_PosInf){
       x[i] = R_NaN;
       continue;
-    } else if (gna[i%g.size()]){
-      x[i] = NA_REAL;
-      continue;
-    } else if (g[i%g.size()] >= 1 - 2*eps) {
+    }
+    // special numeric parameters
+    if (g[i%g.size()] >= 1 - 2 * eps){
       x[i] = m[i%m.size()] + 1.0;
       continue;
-    } else {
-      prob = g[i%g.size()];
     }
-    if (mnan[i%m.size()]){
-      x[i] = R_NaN;
-      continue;
-    } else if (mna[i%m.size()]){
-      x[i] = NA_REAL;
-      continue;
-    } else {
-      sz = m[i%m.size()];
-    }
-    if (prob < 0 || prob > 1){
-      x[i] = R_NaN;
+    if (g[i%g.size()] < 2 * eps){
+      x[i] = 0;
       continue;
     }
-    if (sz < 0){
-      x[i] = R_NaN;
-      continue;
-    }
-    if (pnan[i%p.size()]){
-      x[i] = R_NaN;
-      continue;
-    } else if (pna[i%p.size()]){
-      x[i] = NA_REAL;
-      continue;
-    }
-    // assumes p is on logscale
     if (p[i%p.size()] == R_NegInf){
       x[i] = 0;
       continue;
     }
-    if (p[i%p.size()] <= 0){
-      pp[i] = p[i%p.size()];
-    } else {
-      x[i] = R_NaN;
-      continue;
-    }
-    if (pp[i] >= log(1 - eps)){
+    sz = m[i%m.size()];
+    pp[i] = p[i%p.size()];
+    prob = g[i%g.size()];
+    if (pp[i] == 0){ // i.e., p = 1
       x[i] = sz + 1;
       continue;
     }
@@ -143,9 +140,18 @@ NumericVector qcbinomC(NumericVector p, NumericVector m, NumericVector g,
       }
       x1 = 0.5;
       f1 = pcbinom(x1, sz, prob) - pp[i];
+      ctr = 0;
       while (f1 < 0){
         x1 = fmin(x1 + 0.2, maxx);
         f1 = pcbinom(x1, sz, prob) - pp[i];
+        ctr++;
+        if (ctr > 100){
+          x[i] = R_NaN;
+          break;
+        }
+      }
+      if (ctr > 100){
+        continue;
       }
     } else { // x0 >= 0
       f0 = pcbinom(x0, sz, prob) - pp[i];
@@ -156,22 +162,40 @@ NumericVector qcbinomC(NumericVector p, NumericVector m, NumericVector g,
       if (f0 < 0){ //then increment x1 upward to bracket x
         x1 = fmin(x0 + 0.2, maxx);
         f1 = pcbinom(x1, sz, prob) - pp[i];
+        ctr = 0;
         while(f1 < 0){
           x0 = x1;
           f0 = f1;
           x1 = fmin(x1 + 0.2, maxx);
           f1 = pcbinom(x1, sz, prob) - pp[i];
+          ctr++;
+          if (ctr > 100){
+            x[i] = R_NaN;
+            break;
+          }
+        }
+        if (ctr > 100){
+          continue;
         }
       } else { // f0 > 0 and increment x0 downward to bracket x
         x1 = x0;
         f1 = f0;
         x0 = fmax(eps, x1 - 0.2);
         f0 = pcbinom(x0, sz, prob) - pp[i];
+        ctr = 0;
         while(f0 > 0){
           x1 = x0;
           f1 = f0;
           x0 = fmax(eps, x0 - 0.2);
           f0 = pcbinom(x0, sz, prob) - pp[i];
+          ctr++;
+          if (ctr > 100){
+            x[i] = R_NaN;
+            break;
+          }
+        }
+        if (ctr > 100){
+          continue;
         }
       }
     }

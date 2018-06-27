@@ -55,6 +55,9 @@ pcbinom <- function(q, size, prob, lower.tail = TRUE, log.p = FALSE){
       ans <- log(1 - exp(ans))
     }
   }
+  if (any(is.nan(ans))){
+    warning("NaNs produced")
+  }
   return(ans)
 }
 qcbinom <- function(p, size, prob, lower.tail = TRUE, log.p = FALSE){
@@ -92,7 +95,7 @@ qcbinom <- function(p, size, prob, lower.tail = TRUE, log.p = FALSE){
       if (!lower.tail) p <- log(1 - exp(p))
     }
   })
-  ans <- qcbinomC(p, size, prob, log.p)
+  ans <- qcbinomC(p, size, prob, rcb = F)
   if (any(is.nan(ans))) warning("NaNs produced")
   return(ans)
 }

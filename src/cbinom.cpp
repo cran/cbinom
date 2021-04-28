@@ -1,5 +1,8 @@
+#define STRICT_R_HEADERS
 #include <Rcpp.h>
 #include <cmath>
+#include <float.h>
+
 
 using namespace Rcpp;
 const double eps = DBL_EPSILON;

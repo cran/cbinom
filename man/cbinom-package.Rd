@@ -18,14 +18,13 @@ Included in the package are functions \code{dcbinom(x, size, prob, log = FALSE)}
 family of functions in the \code{stats} R package.
 }
 \author{
-Dan Dalthorp <ddalthorp@usgs.gov>
+Dan Dalthorp <ddalthorp@protonmail.gov>
 }
 \references{
 Ilienko, Andreii (2013). Continuous counterparts of Poisson and binomial
 distributions and their properties. Annales Univ. Sci. Budapest., Sect. Comp.
 39: 137-147. \url{http://ac.inf.elte.hu/Vol_039_2013/137_39.pdf}
 }
-\keyword{ continuous binomial, R package }
 \seealso{
 \code{\link[cbinom]{pcbinom}}
 }
